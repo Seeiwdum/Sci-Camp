@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement; // ต้องมี namespace นี้เพื่อรีโหลดฉากเกม
 
 public class GameManager : MonoBehaviour
 {
     [Header("Game Settings")]
-    [Tooltip("เวลาสูงสุดก่อนที่ผู้โดยสารจะโมโห (วินาที)")]
+    [Tooltip("เวลาสูงสุดก่อนที่ผู้โดยสารจะโมโห (วินาที) (T)")]
     public float maxPassengerPatience = 15f;
     
-    [Tooltip("ติ๊กถูกถ้าอยากให้เริ่มนับเวลาและสั่งวิ่งทันทีเมื่อกด Play")]
-    public bool autoStartOnPlay = true;
+    [Tooltip("ปิดไว้เพื่อให้เกมรอเด็กๆ พิมพ์ความเร็วและกดปุ่ม Start บนหน้าจอก่อน")]
+    public bool autoStartOnPlay = false;
 
     [Header("References")]
     public PlayerTrainController playerTrain;
@@ -34,22 +35,20 @@ public class GameManager : MonoBehaviour
         {
             timer += Time.deltaTime;
 
-            // คำนวณเวลาที่เหลือแล้วส่งไปแสดงผลบน UI
             float timeRemaining = maxPassengerPatience - timer;
             if (uiManager != null)
             {
                 uiManager.UpdateTimerUI(Mathf.Max(0, timeRemaining));
             }
 
-            // ตรวจสอบว่าช้าเกินไปจนลูกค้าโมโหหรือไม่
-            if (timer > maxPassengerPatience)
+            // เมื่อเวลารอของลูกค้าหมดลง
+            if (timer >= maxPassengerPatience)
             {
                 TriggerPassengerAngry();
             }
         }
     }
 
-    [ContextMenu("Start Game Test")]
     public void StartGame()
     {
         isGameActive = true;
@@ -60,7 +59,6 @@ public class GameManager : MonoBehaviour
             playerTrain.StartTrain();
         }
         
-        // ค้นหารถไฟขัดขวางทั้งหมดในฉากแล้วสั่งให้เริ่มวิ่ง
         ObstacleTrain[] obstacles = FindObjectsByType<ObstacleTrain>(FindObjectsSortMode.None);
         foreach (var obs in obstacles)
         {
@@ -71,13 +69,35 @@ public class GameManager : MonoBehaviour
     private void TriggerPassengerAngry()
     {
         isGameActive = false;
+
+        // สั่งหยุดรถไฟผู้เล่นและรถไฟขัดขวาง
         if (playerTrain != null)
         {
             playerTrain.StopTrain();
         }
 
+        ObstacleTrain[] obstacles = FindObjectsByType<ObstacleTrain>(FindObjectsSortMode.None);
+        foreach (var obs in obstacles)
+        {
+            obs.StopMoving();
+        }
+
+        // แจ้ง UIManager ให้แสดงข้อความเวลาหมด + เฉลย
+        if (uiManager != null && playerTrain != null)
+        {
+            uiManager.ShowAngryTimeout(playerTrain.distanceS, maxPassengerPatience, playerTrain.inputSpeedV);
+        }
+
         OnPassengerAngry?.Invoke();
-        Debug.Log("Too Slow! Costumer is Angry Game Over");
+        Debug.Log("ช้าเกินไป! เวลาหมด ลูกค้าโมโห Game Over");
+    }
+
+    // ฟังก์ชันสั่งเริ่มเกมใหม่ (Reload Scene)
+    public void RestartGame()
+    {
+        // โหลดฉากปัจจุบันขึ้นมาใหม่ทันที
+        Scene currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.name);
     }
 
     public void GameEnded() 
