@@ -5,13 +5,15 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [Header("UI Text References")]
-    public TextMeshProUGUI statusText;   // ข้อความแสดงสถานะ
-    public TextMeshProUGUI timerText;    // ข้อความแสดงเวลาถอยหลัง
+    public TextMeshProUGUI statusText;        // ข้อความแสดงสถานะ
+    public TextMeshProUGUI timerText;         // ข้อความแสดงเวลาถอยหลัง
+    public TextMeshProUGUI calculatedVText;   // ข้อความแสดงผลการคำนวณ V = S / T
 
     [Header("UI Control References")]
-    public TMP_InputField speedInputField; // ช่องกรอกค่าความเร็ว V
-    public Button startButton;             // ปุ่มกดออกรถ
-    public Button restartButton;           // ปุ่มกดเริ่มใหม่ (Restart)
+    public TMP_InputField distanceSInputField; // ช่องกรอกระยะทาง S (เมตร)
+    public TMP_InputField timeTInputField;     // ช่องกรอกเวลา T (วินาที)
+    public Button startButton;                 // ปุ่มกดออกรถ
+    public Button restartButton;               // ปุ่มกดเริ่มใหม่ (Restart)
 
     [Header("Script References")]
     public GameManager gameManager;
@@ -21,7 +23,12 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "คำนวณความเร็ว V (m/s) แล้วพิมพ์ลงในช่องด้านล่าง";
+            statusText.text = "กรอกระยะทาง S (m) และ เวลา T (s) เพื่อคำนวณความเร็ว V = S / T";
+        }
+
+        if (calculatedVText != null)
+        {
+            calculatedVText.text = "ผลการคำนวณ V = - m/s";
         }
 
         // ผูก Event ปุ่มกดออกรถ
@@ -34,35 +41,60 @@ public class UIManager : MonoBehaviour
         if (restartButton != null)
         {
             restartButton.onClick.AddListener(OnRestartButtonClicked);
-            restartButton.gameObject.SetActive(false); // ซ่อนปุ่ม Restart ไว้ตอนเริ่มเกม
+            restartButton.gameObject.SetActive(false); // ซ่อนไว้ตอนเริ่ม
         }
     }
 
     public void OnStartButtonClicked()
     {
-        if (speedInputField != null && playerTrain != null)
-        {
-            if (float.TryParse(speedInputField.text, out float inputSpeed))
-            {
-                playerTrain.inputSpeedV = inputSpeed;
-                SetUIInteractable(false);
+        if (distanceSInputField == null || timeTInputField == null || playerTrain == null) return;
 
-                if (gameManager != null)
-                {
-                    gameManager.StartGame();
-                }
-            }
-            else
+        // แปลงค่าที่กรอกเป็นตัวเลข float
+        bool isSValid = float.TryParse(distanceSInputField.text, out float inputS);
+        bool isTValid = float.TryParse(timeTInputField.text, out float inputT);
+
+        if (isSValid && isTValid)
+        {
+            // เช็คป้องกันการหารด้วยศูนย์ (T ต้องไม่เท่ากับ 0)
+            if (inputT <= 0)
             {
                 if (statusText != null)
                 {
-                    statusText.text = "⚠️ กรุณากรอกตัวเลขความเร็วให้ถูกต้อง!";
+                    statusText.text = "⚠️ เวลา (T) ต้องมากกว่า 0 วินาที!";
                 }
+                return;
+            }
+
+            // 🧮 คำนวณความเร็ว V = S / T
+            float calculatedV = inputS / inputT;
+
+            // ส่งค่าไปที่รถไฟผู้เล่น
+            playerTrain.distanceS = inputS;
+            playerTrain.timeT = inputT;
+            playerTrain.inputSpeedV = calculatedV;
+
+            // แสดงผลการคำนวณให้เด็กๆ เห็นบน UI
+            if (calculatedVText != null)
+            {
+                calculatedVText.text = $"คำนวณได้ V = {inputS} / {inputT} = <color=yellow>{calculatedV:F2} m/s</color>";
+            }
+
+            SetUIInteractable(false);
+
+            if (gameManager != null)
+            {
+                gameManager.StartGame();
+            }
+        }
+        else
+        {
+            if (statusText != null)
+            {
+                statusText.text = "⚠️ กรุณากรอกตัวเลข S และ T ให้ถูกต้อง!";
             }
         }
     }
 
-    // เมื่อกดปุ่ม Restart บนหน้าจอ
     public void OnRestartButtonClicked()
     {
         if (gameManager != null)
@@ -75,7 +107,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "💥 รถไฟชนกัน! GAME OVER\n<size=80%>(ความเร็วมากเกินไป หรือมาถึงช่วงทางตัดพร้อมกับรถไฟอีกขบวน)</size>";
+            statusText.text = "💥 รถไฟชนกัน! GAME OVER";
         }
         ShowRestartUI();
     }
@@ -84,27 +116,21 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "🎉 ผ่านทางแยกปลอดภัย! YOU WIN\n<size=80%>(คำนวณความเร็วได้ถูกต้องยอดเยี่ยม!)</size>";
+            statusText.text = "🎉 ผ่านทางแยกปลอดภัย! YOU WIN";
         }
         ShowRestartUI();
     }
 
-    // แสดงข้อความเมื่อเวลาหมด + เฉลยการคำนวณทางฟิสิกส์
-    public void ShowAngryTimeout(float s, float t, float currentV)
+    public void ShowAngry()
     {
-        float correctV = s / t; // สูตร V = S / T
-        
         if (statusText != null) 
         {
-            statusText.text = $" <b>เวลาหมด! ลูกค้าโมโห GAME OVER</b>\n" +
-                              $"ระยะทาง S = {s} m | เวลาที่มี T = {t} s\n" +
-                              $"ความเร็วที่คุณกรอก: <color=red>{currentV} m/s</color> (ช้าไป!)\n" +
-                              $"<color=yellow>ความเร็วขั้นต่ำที่ต้องใช้: V = S/T = {correctV:F1} m/s</color>";
+            statusText.text = "😡 ช้าเกินไป! ลูกค้าโมโห GAME OVER";
         }
         
         if (timerText != null)
         {
-            timerText.text = "เวลาหมดลงแล้ว! (0.0 วินาที)";
+            timerText.text = "เวลาความอดทนลูกค้า: 0.0 วินาที";
         }
 
         ShowRestartUI();
@@ -114,17 +140,17 @@ public class UIManager : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = "Passenger tolerance: " + timeRemaining.ToString("F1") + " Second...";
+            timerText.text = "เวลาความอดทนลูกค้า: " + timeRemaining.ToString("F1") + " วินาที";
         }
     }
 
     private void SetUIInteractable(bool state)
     {
-        if (speedInputField != null) speedInputField.interactable = state;
+        if (distanceSInputField != null) distanceSInputField.interactable = state;
+        if (timeTInputField != null) timeTInputField.interactable = state;
         if (startButton != null) startButton.interactable = state;
     }
 
-    // เปิดการแสดงปุ่ม Restart เมื่อเกมจบ
     private void ShowRestartUI()
     {
         SetUIInteractable(false);

@@ -1,14 +1,13 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement; // ต้องมี namespace นี้เพื่อรีโหลดฉากเกม
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     [Header("Game Settings")]
-    [Tooltip("เวลาสูงสุดก่อนที่ผู้โดยสารจะโมโห (วินาที) (T)")]
+    [Tooltip("เวลาสูงสุดก่อนที่ผู้โดยสารจะโมโห (วินาที)")]
     public float maxPassengerPatience = 15f;
     
-    [Tooltip("ปิดไว้เพื่อให้เกมรอเด็กๆ พิมพ์ความเร็วและกดปุ่ม Start บนหน้าจอก่อน")]
     public bool autoStartOnPlay = false;
 
     [Header("References")]
@@ -70,7 +69,6 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
 
-        // สั่งหยุดรถไฟผู้เล่นและรถไฟขัดขวาง
         if (playerTrain != null)
         {
             playerTrain.StopTrain();
@@ -82,20 +80,17 @@ public class GameManager : MonoBehaviour
             obs.StopMoving();
         }
 
-        // แจ้ง UIManager ให้แสดงข้อความเวลาหมด + เฉลย
-        if (uiManager != null && playerTrain != null)
+        if (uiManager != null)
         {
-            uiManager.ShowAngryTimeout(playerTrain.distanceS, maxPassengerPatience, playerTrain.inputSpeedV);
+            uiManager.ShowAngry();
         }
 
         OnPassengerAngry?.Invoke();
         Debug.Log("ช้าเกินไป! เวลาหมด ลูกค้าโมโห Game Over");
     }
 
-    // ฟังก์ชันสั่งเริ่มเกมใหม่ (Reload Scene)
     public void RestartGame()
     {
-        // โหลดฉากปัจจุบันขึ้นมาใหม่ทันที
         Scene currentScene = SceneManager.GetActiveScene();
         SceneManager.LoadScene(currentScene.name);
     }
