@@ -7,20 +7,39 @@ public class GameManager : MonoBehaviour
     [Tooltip("เวลาสูงสุดก่อนที่ผู้โดยสารจะโมโห (วินาที)")]
     public float maxPassengerPatience = 15f;
     
+    [Tooltip("ติ๊กถูกถ้าอยากให้เริ่มนับเวลาและสั่งวิ่งทันทีเมื่อกด Play")]
+    public bool autoStartOnPlay = true;
+
     [Header("References")]
     public PlayerTrainController playerTrain;
+    public UIManager uiManager;
 
     [Header("Events")]
-    public UnityEvent OnPassengerAngry; // Event เมื่อช้าเกินไป
+    public UnityEvent OnPassengerAngry;
 
     private bool isGameActive = false;
     private float timer = 0f;
+
+    void Start()
+    {
+        if (autoStartOnPlay)
+        {
+            StartGame();
+        }
+    }
 
     void Update()
     {
         if (isGameActive)
         {
             timer += Time.deltaTime;
+
+            // คำนวณเวลาที่เหลือแล้วส่งไปแสดงผลบน UI
+            float timeRemaining = maxPassengerPatience - timer;
+            if (uiManager != null)
+            {
+                uiManager.UpdateTimerUI(Mathf.Max(0, timeRemaining));
+            }
 
             // ตรวจสอบว่าช้าเกินไปจนลูกค้าโมโหหรือไม่
             if (timer > maxPassengerPatience)
@@ -30,13 +49,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    [ContextMenu("Start Game Test")]
     public void StartGame()
     {
         isGameActive = true;
         timer = 0f;
-        playerTrain.StartTrain();
         
-        // สั่งให้รถไฟอุปสรรคเริ่มวิ่ง (ถ้ามีระบบจัดการรวม)
+        if (playerTrain != null)
+        {
+            playerTrain.StartTrain();
+        }
+        
+        // ค้นหารถไฟขัดขวางทั้งหมดในฉากแล้วสั่งให้เริ่มวิ่ง
         ObstacleTrain[] obstacles = FindObjectsByType<ObstacleTrain>(FindObjectsSortMode.None);
         foreach (var obs in obstacles)
         {
@@ -47,7 +71,11 @@ public class GameManager : MonoBehaviour
     private void TriggerPassengerAngry()
     {
         isGameActive = false;
-        playerTrain.StopTrain();
+        if (playerTrain != null)
+        {
+            playerTrain.StopTrain();
+        }
+
         OnPassengerAngry?.Invoke();
         Debug.Log("ช้าเกินไป! ลูกค้าโมโห Game Over");
     }

@@ -6,7 +6,7 @@ public class PlayerTrainController : MonoBehaviour
     [Header("Physics Lesson: v = s/t")]
     [Tooltip("ระยะทางถึงเป้าหมาย (S)")]
     public float distanceS = 100f;
-    
+
     [Tooltip("เวลาที่ปลอดภัยในการผ่านทางแยก (T)")]
     public float timeT = 10f;
 
@@ -17,13 +17,13 @@ public class PlayerTrainController : MonoBehaviour
     [Header("Game Status")]
     public bool isRunning = false;
 
-    [Header("Events (ลาก UI หรือ Effect มาใส่ได้เลย)")]
+    [Header("Events")]
     public UnityEvent OnTrainCrashed;
     public UnityEvent OnTrainPassed;
 
     void Update()
     {
-        // ถ้าเกมเริ่มแล้ว ให้รถไฟวิ่งไปข้างหน้าด้วยความเร็วที่เด็กๆ ตั้งไว้
+        // ถ้าสั่งให้วิ่ง ให้รถไฟเคลื่อนที่ไปข้างหน้าตามความเร็ว inputSpeedV
         if (isRunning)
         {
             transform.Translate(Vector3.forward * inputSpeedV * Time.deltaTime);
