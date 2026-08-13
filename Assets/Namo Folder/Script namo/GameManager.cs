@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
         }
 
         OnPassengerAngry?.Invoke();
-        Debug.Log("ช้าเกินไป! ลูกค้าโมโห Game Over");
+        Debug.Log("Too Slow! Costumer is Angry Game Over");
     }
 
     public void GameEnded() 

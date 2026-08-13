@@ -47,13 +47,13 @@ public class PlayerTrainController : MonoBehaviour
         {
             StopTrain();
             OnTrainCrashed?.Invoke();
-            Debug.Log("รถไฟชนกัน! Game Over");
+            Debug.Log("Crashed! Game Over");
         }
         else if (other.CompareTag("FinishLine"))
         {
             StopTrain();
             OnTrainPassed?.Invoke();
-            Debug.Log("ผ่านทางแยกปลอดภัย! You Win!");
+            Debug.Log("Yeah! You Win!");
         }
     }
 }

@@ -11,7 +11,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "คำนวณความเร็วแล้วกด Play";
+            statusText.text = "Calculate and Play";
         }
     }
 
@@ -20,7 +20,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "💥 รถไฟชนกัน! GAME OVER";
+            statusText.text = " Crashed! GAME OVER";
         }
     }
 
@@ -29,7 +29,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "🎉 ผ่านทางแยกปลอดภัย! YOU WIN";
+            statusText.text = " Yeahh! YOU WIN";
         }
     }
 
@@ -38,7 +38,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "😡 ช้าเกินไป! ลูกค้าโมโห GAME OVER";
+            statusText.text = " Too Slow! Costumer is Angry GAME OVER";
         }
     }
 
@@ -47,7 +47,7 @@ public class UIManager : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = "เวลาความอดทนลูกค้า: " + timeRemaining.ToString("F1") + " วินาที";
+            timerText.text = "Costumer Can wait: " + timeRemaining.ToString("F1") + " Second..";
         }
     }
 }
