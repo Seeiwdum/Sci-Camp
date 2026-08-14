@@ -1,53 +1,99 @@
 using UnityEngine;
-using UnityEngine.Events;
 
 public class PlayerTrainController : MonoBehaviour
 {
-    [Header("Physics Settings")]
-    public float distanceS = 100f;
-    public float timeT = 10f;
+    [Header("Physics Parameters (V = S / T)")]
+    public float distanceS;
+    public float timeT;
+    public float inputSpeedV; // ความเร็ว V ที่คำนวณได้
 
-    [Header("Student Input")]
-    public float inputSpeedV = 0f;
+    [Header("Track Navigation (Optional - ไม่ใส่จะวิ่งตรง)")]
+    public TrackPath trackPath;     // ลาก TrackPath มาใส่ หรือเว้นว่างไว้ก็ได้
+    public float rotateSpeed = 8f;  // ความเร็วในการหมุนเลี้ยวตามราง
 
-    [Header("Game Status")]
-    public bool isRunning = false;
+    [Header("References")]
+    public GameManager gameManager;
 
-    [Header("Events")]
-    public UnityEvent OnTrainCrashed;
-    public UnityEvent OnTrainPassed;
+    private bool isMoving = false;
+    private int currentWaypointIndex = 0;
+
+    public void StartEngine()
+    {
+        currentWaypointIndex = 0;
+        isMoving = true;
+    }
 
     void Update()
     {
-        if (isRunning)
+        if (!isMoving) return;
+
+        // เช็คว่ามี TrackPath และมีจุด Waypoint หรือไม่
+        if (trackPath != null && trackPath.waypoints != null && trackPath.waypoints.Count > 0)
         {
-            transform.Translate(Vector3.forward * inputSpeedV * Time.deltaTime);
+            // 🟢 กรณีที่ 1: มี TrackPath -> วิ่งตามจุดรางโค้ง
+            MoveAlongTrack();
+        }
+        else
+        {
+            // 🟡 กรณีที่ 2: ไม่ใส่ TrackPath -> วิ่งตรงไปข้างหน้า
+            MoveStraight();
         }
     }
 
-    public void StartTrain()
+    private void MoveAlongTrack()
     {
-        isRunning = true;
+        if (currentWaypointIndex >= trackPath.waypoints.Count) return;
+
+        Transform targetWaypoint = trackPath.waypoints[currentWaypointIndex];
+        Vector3 targetPos = targetWaypoint.position;
+
+        // เคลื่อนที่เข้าหา Waypoint ตามความเร็ว V
+        transform.position = Vector3.MoveTowards(transform.position, targetPos, inputSpeedV * Time.deltaTime);
+
+        // หมุนหัวรถไฟไปตามแนวราง
+        Vector3 moveDirection = (targetPos - transform.position).normalized;
+        if (moveDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+        }
+
+        // เมื่อถึงจุด Waypoint ให้เปลี่ยนไปจุดถัดไป
+        if (Vector3.Distance(transform.position, targetPos) < 0.05f)
+        {
+            currentWaypointIndex++;
+            if (currentWaypointIndex >= trackPath.waypoints.Count)
+            {
+                isMoving = false; // แล่นสุดทางแล้ว
+            }
+        }
     }
 
-    public void StopTrain()
+    private void MoveStraight()
     {
-        isRunning = false;
+        // วิ่งตรงไปตามทิศทางหน้าของรถไฟด้วยความเร็ว V
+        transform.Translate(Vector3.forward * inputSpeedV * Time.deltaTime, Space.Self);
+    }
+
+    public void ResetTrain(Vector3 startPosition, Quaternion startRotation)
+    {
+        isMoving = false;
+        currentWaypointIndex = 0;
+        transform.position = startPosition;
+        transform.rotation = startRotation;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("ObstacleTrain"))
         {
-            StopTrain();
-            OnTrainCrashed?.Invoke();
-            Debug.Log("รถไฟชนกัน! Game Over");
+            isMoving = false;
+            if (gameManager != null) gameManager.OnTrainCrashed();
         }
         else if (other.CompareTag("FinishLine"))
         {
-            StopTrain();
-            OnTrainPassed?.Invoke();
-            Debug.Log("ผ่านทางแยกปลอดภัย! You Win!");
+            isMoving = false;
+            if (gameManager != null) gameManager.OnTrainPassed();
         }
     }
 }

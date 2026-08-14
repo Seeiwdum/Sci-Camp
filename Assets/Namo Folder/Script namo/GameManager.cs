@@ -1,102 +1,76 @@
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     [Header("Game Settings")]
-    [Tooltip("เวลาสูงสุดก่อนที่ผู้โดยสารจะโมโห (วินาที)")]
-    public float maxPassengerPatience = 15f;
-    
-    public bool autoStartOnPlay = false;
+    public float customerMaxPatienceTime = 10f;
 
     [Header("References")]
     public PlayerTrainController playerTrain;
+    public ObstacleTrain obstacleTrain;
     public UIManager uiManager;
 
-    [Header("Events")]
-    public UnityEvent OnPassengerAngry;
-
+    private float currentPatienceTimer;
     private bool isGameActive = false;
-    private float timer = 0f;
 
     void Start()
     {
-        if (autoStartOnPlay)
-        {
-            StartGame();
-        }
+        currentPatienceTimer = customerMaxPatienceTime;
     }
 
     void Update()
     {
-        if (isGameActive)
+        if (!isGameActive) return;
+
+        currentPatienceTimer -= Time.deltaTime;
+        if (uiManager != null)
         {
-            timer += Time.deltaTime;
+            uiManager.UpdateTimerUI(currentPatienceTimer);
+        }
 
-            float timeRemaining = maxPassengerPatience - timer;
-            if (uiManager != null)
-            {
-                uiManager.UpdateTimerUI(Mathf.Max(0, timeRemaining));
-            }
-
-            // เมื่อเวลารอของลูกค้าหมดลง
-            if (timer >= maxPassengerPatience)
-            {
-                TriggerPassengerAngry();
-            }
+        if (currentPatienceTimer <= 0)
+        {
+            OnCustomerAngry();
         }
     }
 
     public void StartGame()
     {
         isGameActive = true;
-        timer = 0f;
-        
-        if (playerTrain != null)
-        {
-            playerTrain.StartTrain();
-        }
-        
-        ObstacleTrain[] obstacles = FindObjectsByType<ObstacleTrain>(FindObjectsSortMode.None);
-        foreach (var obs in obstacles)
-        {
-            obs.StartMoving();
-        }
+        currentPatienceTimer = customerMaxPatienceTime;
+
+        if (playerTrain != null) playerTrain.StartEngine();
+        if (obstacleTrain != null) obstacleTrain.StartEngine();
     }
 
-    private void TriggerPassengerAngry()
+    // --- ฟังก์ชันที่ PlayerTrainController เรียกใช้ ---
+    public void OnTrainPassed()
     {
+        if (!isGameActive) return;
         isGameActive = false;
 
-        if (playerTrain != null)
-        {
-            playerTrain.StopTrain();
-        }
+        if (uiManager != null) uiManager.ShowPassed();
+    }
 
-        ObstacleTrain[] obstacles = FindObjectsByType<ObstacleTrain>(FindObjectsSortMode.None);
-        foreach (var obs in obstacles)
-        {
-            obs.StopMoving();
-        }
+    public void OnTrainCrashed()
+    {
+        if (!isGameActive) return;
+        isGameActive = false;
 
-        if (uiManager != null)
-        {
-            uiManager.ShowAngry();
-        }
+        if (uiManager != null) uiManager.ShowCrashed();
+    }
 
-        OnPassengerAngry?.Invoke();
-        Debug.Log("ช้าเกินไป! เวลาหมด ลูกค้าโมโห Game Over");
+    public void OnCustomerAngry()
+    {
+        if (!isGameActive) return;
+        isGameActive = false;
+
+        if (uiManager != null) uiManager.ShowAngry();
     }
 
     public void RestartGame()
     {
-        Scene currentScene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(currentScene.name);
-    }
-
-    public void GameEnded() 
-    {
-        isGameActive = false;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

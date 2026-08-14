@@ -44,10 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 477d3731ac8516f4c9ba1dcd416958ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPassengerPatience: 4
-  autoStartOnPlay: 0
+  customerMaxPatienceTime: 10
   playerTrain: {fileID: 0}
+  obstacleTrain: {fileID: 0}
   uiManager: {fileID: 0}
-  OnPassengerAngry:
-    m_PersistentCalls:
-      m_Calls: []

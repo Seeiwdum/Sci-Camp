@@ -150,4 +150,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 20
-  moveOnStart: 0
+  moveDirection: {x: 0, y: 0, z: 1}
+  trackPath: {fileID: 0}
+  rotateSpeed: 8

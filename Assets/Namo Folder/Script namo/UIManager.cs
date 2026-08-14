@@ -23,12 +23,12 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "กรอกระยะทาง S (m) และ เวลา T (s) เพื่อคำนวณความเร็ว V = S / T";
+            statusText.text = "กรอกระยะทาง S  และ เวลา T  เพื่อคำนวณความเร็ว V = S / T";
         }
 
         if (calculatedVText != null)
         {
-            calculatedVText.text = "ผลการคำนวณ V = - m/s";
+            calculatedVText.text = "ผลการคำนวณ V = m/s";
         }
 
         // ผูก Event ปุ่มกดออกรถ
@@ -60,7 +60,7 @@ public class UIManager : MonoBehaviour
             {
                 if (statusText != null)
                 {
-                    statusText.text = "⚠️ เวลา (T) ต้องมากกว่า 0 วินาที!";
+                    statusText.text = "เวลา ต้องมากกว่า 0 วินาที!";
                 }
                 return;
             }
@@ -90,7 +90,7 @@ public class UIManager : MonoBehaviour
         {
             if (statusText != null)
             {
-                statusText.text = "⚠️ กรุณากรอกตัวเลข S และ T ให้ถูกต้อง!";
+                statusText.text = "กรุณากรอกตัวเลข S และ T ให้ถูกต้อง!";
             }
         }
     }
@@ -107,7 +107,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "💥 รถไฟชนกัน! GAME OVER";
+            statusText.text = "รถไฟชนกัน! GAME OVER";
         }
         ShowRestartUI();
     }
@@ -116,7 +116,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "🎉 ผ่านทางแยกปลอดภัย! YOU WIN";
+            statusText.text = " ผ่านทางแยกปลอดภัย! YOU WIN";
         }
         ShowRestartUI();
     }
@@ -125,7 +125,7 @@ public class UIManager : MonoBehaviour
     {
         if (statusText != null) 
         {
-            statusText.text = "😡 ช้าเกินไป! ลูกค้าโมโห GAME OVER";
+            statusText.text = "ช้าเกินไป! ลูกค้าโมโห GAME OVER";
         }
         
         if (timerText != null)
