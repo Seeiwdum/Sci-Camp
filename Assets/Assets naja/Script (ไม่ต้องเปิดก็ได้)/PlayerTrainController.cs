@@ -7,7 +7,7 @@ public class PlayerTrainController : MonoBehaviour
     public float timeT;
     public float inputSpeedV; // ความเร็ว V ที่คำนวณได้
 
-    [Header("Track Navigation (Optional - ไม่ใส่จะวิ่งตรง)")]
+    [Header("Track Navigation")]
     public TrackPath trackPath;     // ลาก TrackPath มาใส่ หรือเว้นว่างไว้ก็ได้
     public float rotateSpeed = 8f;  // ความเร็วในการหมุนเลี้ยวตามราง
 

@@ -6,7 +6,7 @@ public class ObstacleTrain : MonoBehaviour
     public float moveSpeed = 5f;
     public Vector3 moveDirection = Vector3.forward;
 
-    [Header("Track Navigation (Optional - ไม่ใส่จะวิ่งตรง)")]
+    [Header("Track Navigation")]
     public TrackPath trackPath;
     public float rotateSpeed = 8f;
 
