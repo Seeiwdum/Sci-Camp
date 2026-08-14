@@ -28,7 +28,7 @@ public class UIManager : MonoBehaviour
 
         if (calculatedVText != null)
         {
-            calculatedVText.text = "ผลการคำนวณ V = m/s";
+            calculatedVText.text = "ผลการคำนวณ V = S/T";
         }
 
         // ผูก Event ปุ่มกดออกรถ
